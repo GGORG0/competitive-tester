@@ -33,6 +33,7 @@ import sys
 import glob
 import importlib
 import json
+import time
 import colorama
 
 ok_icon = colorama.Fore.GREEN + '✓'
@@ -180,20 +181,23 @@ def run_tests(program, tests):
         print_inprogress(f'Running {test_type} test {name}...')
 
         try:
+            start_time = time.time()
             proc = subprocess.run(
                 [program],
                 input=test_input,
                 encoding='utf-8',
                 stdout=subprocess.PIPE,
                 check=True)
+            end_time = time.time()
+            run_time = end_time - start_time
             actual_output = proc.stdout.strip()
 
             if test_type == 'static':
                 if actual_output == test_output.strip():
-                    print_success('Passed!')
+                    print_success(f'Passed ({run_time:.3f}s)!')
                     passed_tests += 1
                 else:
-                    print_error('Failed!', False, False)
+                    print_error(f'Failed ({run_time:.3f}s)!', False, False)
                     if len(test_output) > 100 or len(actual_output) > 100:
                         print_error(' (Output too long to print.)',
                                     False, False, False)
@@ -204,10 +208,10 @@ def run_tests(program, tests):
                         print_error(actual_output, False, False, False)
             elif test_type == 'checker':
                 if test_output(test_input, actual_output):
-                    print_success('Passed!')
+                    print_success(f'Passed ({run_time:.3f}s)!')
                     passed_tests += 1
                 else:
-                    print_error('Failed!', False, False)
+                    print_error(f'Failed ({run_time:.3f}s)!', False, False)
                     if len(actual_output) > 100:
                         print_error(' (Output too long to print.)',
                                     False, False, False)
