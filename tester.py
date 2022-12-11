@@ -202,6 +202,9 @@ def run_tests(program, tests):
                         print_error(' (Output too long to print.)',
                                     False, False, False)
                     else:
+                        if len(test_input) < 100:
+                            print_error(' Input:', False, False, False)
+                            print_error(test_input, False, False, False)
                         print_error(' Expected output:', False, False, False)
                         print_error(test_output, False, False, False)
                         print_error(' Actual output:', False, False, False)
@@ -216,6 +219,9 @@ def run_tests(program, tests):
                         print_error(' (Output too long to print.)',
                                     False, False, False)
                     else:
+                        if len(test_input) < 100:
+                            print_error(' Input:', False, False, False)
+                            print_error(test_input, False, False, False)
                         print_error(' Output:', False, False, False)
                         print_error(actual_output, False, False, False)
         except subprocess.CalledProcessError as err:
