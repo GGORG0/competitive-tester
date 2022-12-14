@@ -15,6 +15,11 @@ It can use:
 - TESTS.json/ALLTESTS.py files as all tests
     - the ALLTESTS.py file should contain a function called test that takes the input and output as a parameter and returns True if the test passed
     - TESTS.json should contain a dictionary with the test name as the key and the input as the value
+- GENERATOR.py/ALLTESTS.py files as all tests
+    - the GENERATOR.py file should contain a function called generate that returns a list of tuples with the test name, test type ("checker") and input
+    - the ALLTESTS.py file should contain a function called test that takes the input and output as a parameter and returns True if the test passed
+- GENERATOR.py files as all tests
+    - the GENERATOR.py file should contain a function called generate that returns a list of tuples with the test name, test type ("static") and a tuple with the input and output
 
 Usage:
 python3 test.py --test-dir <test directory> <program>
@@ -22,9 +27,10 @@ or
 python3 test.py --auto <program> (it will search for the tests in the same directory as the program)
 """
 
-# TODO: Add support for GENERATOR.py files
 # TODO: Add support for a separate brute force program for checking the output
 # TODO: Add support for uploading programs to Themis
+# TODO: Add support for recursively finding programs just by their name
+# TODO: Add support for running the program with a time limit
 
 import subprocess
 import argparse
@@ -171,6 +177,17 @@ def get_tests(test_dir):
                 # We have a static TESTS.json test
                 tests[name + '#json'] = ('static', test[0], test[1])
 
+    # Run GENERATOR.py if it exists
+    if os.path.isfile(os.path.join(test_dir, 'GENERATOR.py')):
+        generator = importlib.import_module('GENERATOR').generate
+        for name, test_type, test in generator():
+            if test_type == 'static':
+                inp, outp = test
+                tests[name + '#gen'] = (test_type, inp, outp)
+            elif test_type == 'checker':
+                inp = test
+                tests[name + '#gen/atpy'] = (test_type, inp, alltests)
+
     return tests
 
 
@@ -210,6 +227,7 @@ def run_tests(program, tests):
                         print_error(' Actual output:', False, False, False)
                         print_error(actual_output, False, False, False)
             elif test_type == 'checker':
+                print_inprogress('Checking...')
                 if test_output(test_input, actual_output):
                     print_success(f'Passed ({run_time:.3f}s)!')
                     passed_tests += 1
